@@ -14,7 +14,7 @@ def etl_process_cohort_analysis(file_path):
         "Año", "Carrera Genérica", "Nombre Region", "Vacantes", "Matrícula primer año hombres",
         "Matrícula primer año mujeres", "Matrícula Primer Año", "Matrícula Total", "Máximo Puntaje NEM",
         "Promedio Puntaje NEM", "Mínimo Puntaje NEM", "Máximo Puntaje Ranking", "Promedio Puntaje Ranking",
-        "Mínimo Puntaje Ranking", "Tipo Carrera", "IngresoDirecto"
+        "Mínimo Puntaje Ranking", "Tipo Carrera", "IngresoDirecto", "Matrícula primer año extranjeros"
     ]
     data_filtered = data[columns_of_interest].copy()
 
@@ -38,10 +38,14 @@ def etl_process_cohort_analysis(file_path):
     data_filtered['Nombre Region'] = data_filtered['Nombre Region'].str.title()  # Normaliza el nombre de la región
 
     # Crear métricas adicionales
-    data_filtered["Ingreso_Total"] = data_filtered["Matrícula primer año hombres"].fillna(0) + data_filtered["Matrícula primer año mujeres"].fillna(0)
-    data_filtered["Retención"] = (data_filtered["Matrícula Total"] / data_filtered["Ingreso_Total"]).fillna(0) * 100
-
-    data_filtered = data_filtered[np.isfinite(data_filtered["Retención"])]
+    data_filtered["Ingreso_Total"] = data_filtered["Matrícula primer año hombres"].fillna(0) + data_filtered["Matrícula primer año mujeres"].fillna(0) + data_filtered["Matrícula primer año extranjeros"].fillna(0)
+    # Calcular "Retención" correctamente
+    data_filtered["Retención"] = np.where(
+        data_filtered["Ingreso_Total"] > 0,
+        (data_filtered["Matrícula Total"] / data_filtered["Ingreso_Total"]) * 100,
+        0  # Si no hay ingresos, la retención es 0
+    )
+   
 
     # Segmentación y agregación para análisis de cohortes
     cohort_analysis = data_filtered.groupby(["Año", "Carrera Genérica", "Nombre Region", "Tipo Carrera"]).agg({
