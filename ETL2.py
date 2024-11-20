@@ -18,7 +18,7 @@ def etl_process_cohort_analysis(file_path):
     ]
     data_filtered = data[columns_of_interest].copy()
 
-    # Filtrar solo los datos entre 2020 y 2024
+    # Filtrar solo los datos entre 2014 y 2024
     data_filtered = data_filtered[(data_filtered["Año"] >= 2014) & (data_filtered["Año"] <= 2024)]
 
     # Limpieza de datos: Eliminar duplicados
